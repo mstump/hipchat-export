@@ -67,8 +67,9 @@ fn main() {
     let program = args[0].clone();
 
     let mut opts = Options::new();
-    opts.reqopt("o", "", "set output directory", "NAME");
-    opts.reqopt("k", "", "hipchat API key", "KEY");
+    opts.optopt("o", "", "set output directory", "PATH");
+    opts.optopt("k", "", "hipchat API key", "KEY");
+    opts.optopt("s", "", "resume at user with name", "NAME");
     opts.optflag("h", "help", "print this help menu");
 
     let matches = match opts.parse(&args[1..]) {
@@ -102,9 +103,26 @@ fn main() {
     let user_request = UsersRequest{start_index: Some(0), max_results: Some(max_results), ..Default::default()};
     let users = hipchat_client.get_users(Some(&user_request)).unwrap();
 
-    for user in &(users.items) {
+    let mut user_list:Vec<hipchat_client::user::User> = Vec::new();
+
+    let skip_to = matches.opt_str("s");
+    if skip_to.is_some() {
+        let split_string = skip_to.unwrap();
+        let split_at = users.items.iter().enumerate().find(|&r| r.1.name == split_string.to_string());
+        if split_at.is_some() {
+            let (_, short_list) = users.items.split_at(split_at.unwrap().0);
+            user_list.append(&mut short_list.to_vec());
+        } else {
+            println!("can't find '{}'", split_string);
+            return;
+        }
+    } else {
+        user_list = users.items.clone();
+    }
+
+    for user in &(user_list) {
         let path = &format!("{}/{}", output.as_ref().unwrap(), user.name);
-        let messages_path = &format!("{}/messages", path);
+        let messages_path = &format!("{}/messages.csv", path);
         println!("Fetching messages from '{}' to '{}'", user.name, path);
 
         DirBuilder::new().recursive(true).create(path).unwrap();
