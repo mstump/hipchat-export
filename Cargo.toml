@@ -1,0 +1,11 @@
+[package]
+name = "hipchat-export"
+version = "0.1.0"
+authors = ["Matt Stump <mstump@datastax.com>"]
+
+[dependencies]
+csv = "0.14.4"
+getopts = "0.2"
+hipchat-client = { git = "https://github.com/mstump/hipchat-client.git" }
+hyper = "0.7"
+time = "0.1.35"
