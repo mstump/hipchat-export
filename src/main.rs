@@ -139,6 +139,7 @@ fn main() {
 
             request.start_index = Some(request.start_index.unwrap() + max_results)
         }
+        std::thread::sleep(std::time::Duration::new(3, 0)); // hipchat only allows 20 calls per minute
     }
     println!("Done!");
 }
